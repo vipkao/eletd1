@@ -12,7 +12,9 @@
     </body>
 	<script>
 		window.addEventListener('load', function(){
-            setTimeout(scrollTo( 0, 1), 1000);
+            setTimeout(function(){
+                window.scrollTo(0, 1);
+            }, 1000);
 		});
 	</script>    
     <script src="config.js"></script>
