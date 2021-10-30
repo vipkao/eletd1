@@ -9,6 +9,7 @@ import { EndingFactory } from "./View/SceneFactory/EndingFactory";
 import { EndingSceneImageKeys } from "./View/EndingScene";
 import { PcFactory } from "./View/SceneFactory/PcFactory";
 import { IPhaserConfigFactory } from "./View/interfaces";
+import { SpFactory } from "./View/SceneFactory/SpFactory";
 
 declare const TITLE_IMAGES : { [key in TitleSceneImageKeys]: string };
 declare const SCENE_IMAGES : { [key in PlaySceneImageKeys]: string };
@@ -28,7 +29,7 @@ declare const __DEVICE: string;
 
 const phaserConfigFactory = (():IPhaserConfigFactory => {
     if(__DEVICE == "pc") return new PcFactory();
-    if(__DEVICE == "sp") return new PcFactory();
+    if(__DEVICE == "sp") return new SpFactory();
     throw new Error("not support:"+__DEVICE);
 })();
 
