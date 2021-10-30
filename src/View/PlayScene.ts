@@ -11,10 +11,11 @@ import { StageFailEnd } from "./GameLayer/StargeFailEnd";
 import { IPlayStage } from "Model/interfaces";
 import { EventEmitter, EventPort } from "Model/Utils/EventEmitter";
 import { SaveData } from "Model/Element/SaveData";
-import { ILiveAreaDrawer, IPhaserConfigFactory } from "./interfaces";
+import { ILiveAreaDrawer } from "./interfaces";
 import { AreaType, Factory as AreaFactory } from "./LiveAreaDrawer/Factory";
 import { MessageOk } from "./GameLayer/MessageOk";
 import { Help } from "./GameLayer/Help";
+import { PhaserGame } from "./PhaserGame";
 
 export type PlaySceneImageKeys =
     "titleImage" | "captionImage"
@@ -76,8 +77,7 @@ export class PlayScene implements IPlayStage{
     private readonly _caption: string;
     get caption(): string { return this._caption; }
 
-    private readonly phaserConfigFactory: IPhaserConfigFactory;
-    private phaserGame : Phaser.Game | null = null;
+    private readonly phaserGame: PhaserGame;
 
     constructor(
         title: string, caption: string,
@@ -86,7 +86,7 @@ export class PlayScene implements IPlayStage{
         helpImageKeys: string[],
         stageAudiences: (string | number)[][],
         memberConfig: memberConfigKeys[],
-        phaserConfigFactory: IPhaserConfigFactory,
+        phaserGame: PhaserGame,
         model: Model
     ){
         this._title = title;
@@ -95,7 +95,7 @@ export class PlayScene implements IPlayStage{
         this.sceneImages = sceneImages;
         this.helpImageKeys = helpImageKeys;
         this.memberConfig = memberConfig;
-        this.phaserConfigFactory = phaserConfigFactory;
+        this.phaserGame = phaserGame;
         this.model = model;
 
         this.event = new EventEmitter();
@@ -302,11 +302,7 @@ export class PlayScene implements IPlayStage{
             }
         );
 
-        const config = this.phaserConfigFactory.Create();
-        config["scene"] = scene;
-        this.phaserGame = new Phaser.Game(
-            config
-        );
+        this.phaserGame.Switch(scene);
     }
 
     Destroy(){
@@ -319,14 +315,6 @@ export class PlayScene implements IPlayStage{
         this.cannotSelectLiveMember.Destory();
         this.putMember.Destory();
         this.help.Destory();
-        if(this.phaserGame === null) return;
-        this.phaserGame.scene.getScenes().forEach(scene => {
-            scene.textures.destroy();
-        });
-        this.phaserGame.scene.stop(this._title);
-        this.phaserGame.scene.remove(this._title);
-        //this.phaserGame.scene.destroy();
-        this.phaserGame.destroy(true, false);
     }
 
     static CreateMemberConfigs(

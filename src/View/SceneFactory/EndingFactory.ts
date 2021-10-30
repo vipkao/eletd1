@@ -1,19 +1,19 @@
 import { SaveData } from "Model/Element/SaveData";
 import { IEnding, IEndingFactory } from "Model/interfaces";
 import { EndingScene, EndingSceneImageKeys } from "../EndingScene";
-import { IPhaserConfigFactory } from "../interfaces";
+import { PhaserGame } from "../PhaserGame";
 
 export class EndingFactory implements IEndingFactory{
 
     private readonly images: { [key in EndingSceneImageKeys]: string };
-    private readonly phaserConfigFactory: IPhaserConfigFactory;
+    private readonly phaserGame: PhaserGame;
 
     constructor(
         images: { [key in EndingSceneImageKeys]: string },
-        phaserConfigFactory: IPhaserConfigFactory
+        phaserGame: PhaserGame
     ){
         this.images = images;
-        this.phaserConfigFactory = phaserConfigFactory;
+        this.phaserGame = phaserGame;
     }
 
     Create(saveData: SaveData): IEnding {
@@ -21,13 +21,13 @@ export class EndingFactory implements IEndingFactory{
             return new EndingScene(
                 saveData.subscribers,
                 this.images["ending1"],
-                this.phaserConfigFactory
+                this.phaserGame
             );    
         }else{
             return new EndingScene(
                 saveData.subscribers,
                 this.images["ending2"],
-                this.phaserConfigFactory
+                this.phaserGame
             );                
         }
     }

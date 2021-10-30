@@ -15,11 +15,3 @@ export interface ILiveAreaDrawer{
     Fill(x: number, y:number, graphics: Phaser.GameObjects.Graphics): Phaser.GameObjects.Graphics;
     Stroke(x: number, y:number, graphics: Phaser.GameObjects.Graphics): Phaser.GameObjects.Graphics;
 }
-
-/**
- * GameConfigを生成する実装。
- */
-export interface IPhaserConfigFactory{
-    Create(
-    ): Phaser.Types.Core.GameConfig
-}

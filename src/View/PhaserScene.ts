@@ -2,6 +2,8 @@ import "phaser";
 
 export class PhaserScene extends Phaser.Scene{
 
+    readonly name: string;
+
     private readonly _preload: (phaserScene: PhaserScene) => void;
     private readonly _create: (phaserScene: PhaserScene) => void;
     private readonly _update: (phaserScene: PhaserScene) => void;
@@ -14,6 +16,7 @@ export class PhaserScene extends Phaser.Scene{
     ){
         super(name);
 
+        this.name = name;
         this._preload = preload;
         this._create = create;
         this._update = update;

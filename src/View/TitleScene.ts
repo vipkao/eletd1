@@ -5,7 +5,7 @@ import { EventEmitter, EventPort } from "Model/Utils/EventEmitter";
 import { Title } from "./GameLayer/Title";
 import { SaveData } from "#/Model/Element/SaveData";
 import { Help } from "./GameLayer/Help";
-import { IPhaserConfigFactory } from "./interfaces";
+import { PhaserGame } from "./PhaserGame";
 
 export type TitleSceneImageKeys =
     "background" | "newButton" | "continueButton"
@@ -32,14 +32,13 @@ export class TitleScene implements ITitle{
     private readonly buttonImageKey: string;
     private readonly helpImageKeys: string[];
 
-    private readonly phaserConfigFactory: IPhaserConfigFactory;
-    private phaserGame : Phaser.Game | null = null;
+    private readonly phaserGame: PhaserGame;
 
     constructor(
         images : {[key in TitleSceneImageKeys]: string},
         buttonImageKey: string,
         helpImageKeys: string[],
-        phaserConfigFactory: IPhaserConfigFactory,
+        phaserGame: PhaserGame
     ){
         this.event = new EventEmitter();
         this._onStageSelected = new EventPort("OnStageSelected", this.event);
@@ -47,7 +46,7 @@ export class TitleScene implements ITitle{
         this.images = images;
         this.buttonImageKey = buttonImageKey;
         this.helpImageKeys = helpImageKeys;
-        this.phaserConfigFactory = phaserConfigFactory;
+        this.phaserGame = phaserGame;
 
         this.title = new Title(
             images["background"], buttonImageKey
@@ -94,17 +93,11 @@ export class TitleScene implements ITitle{
             }
         );
 
-        const config = this.phaserConfigFactory.Create();
-        config["scene"] = scene;
-        this.phaserGame = new Phaser.Game(
-            config
-        );
+        this.phaserGame.Switch(scene);
     }
 
     Destroy(){
         this.title.Destory();
         this.help.Destory();
-        if(this.phaserGame === null) return;
-        this.phaserGame.destroy(true, false);
     }
 }

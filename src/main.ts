@@ -7,9 +7,7 @@ import { StageFactory } from "./View/SceneFactory/StageFactory";
 import { TitleSceneImageKeys } from "./View/TitleScene";
 import { EndingFactory } from "./View/SceneFactory/EndingFactory";
 import { EndingSceneImageKeys } from "./View/EndingScene";
-import { PcFactory } from "./View/SceneFactory/PcFactory";
-import { IPhaserConfigFactory } from "./View/interfaces";
-import { SpFactory } from "./View/SceneFactory/SpFactory";
+import { DEVICE_TYPE, PhaserGame } from "./View/PhaserGame";
 
 declare const TITLE_IMAGES : { [key in TitleSceneImageKeys]: string };
 declare const SCENE_IMAGES : { [key in PlaySceneImageKeys]: string };
@@ -25,13 +23,9 @@ declare const STAGES : (string | number)[][];
 declare const __START_STAGE_INDEX : number;
 declare const __INITIAL_SUBSCRIBER: number;
 
-declare const __DEVICE: string;
+declare const __DEVICE: DEVICE_TYPE;
 
-const phaserConfigFactory = (():IPhaserConfigFactory => {
-    if(__DEVICE == "pc") return new PcFactory();
-    if(__DEVICE == "sp") return new SpFactory();
-    throw new Error("not support:"+__DEVICE);
-})();
+const phaserGame = new PhaserGame(PhaserGame.GetConfig(__DEVICE));
 
 const stageFactories = StageFactory.CreateArray(
     SCENE_IMAGES,
@@ -39,13 +33,13 @@ const stageFactories = StageFactory.CreateArray(
     STAGES,
     MEMBER_TEMPLATE, STAGE_MEMBERS,
     AUDIENCE_SCORE_TEMPLATE, AUDIENCE_ROUTE_TEMPLATE, STAGE_AUDIENCES,
-    phaserConfigFactory
+    phaserGame
 );
 
 const director = new StageDirector(
-    new TitleFactory(TITLE_IMAGES, HELP_IMAGES, phaserConfigFactory),
+    new TitleFactory(TITLE_IMAGES, HELP_IMAGES, phaserGame),
     stageFactories,
-    new EndingFactory(ENDING_IMAGES, phaserConfigFactory)
+    new EndingFactory(ENDING_IMAGES, phaserGame)
 );
 const saveData = new SaveData();
 saveData.subscribers = __INITIAL_SUBSCRIBER;

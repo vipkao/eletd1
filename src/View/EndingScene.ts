@@ -3,8 +3,7 @@ import { PhaserScene } from "./PhaserScene";
 import { IEnding } from "Model/interfaces";
 import { EventEmitter, EventPort } from "Model/Utils/EventEmitter";
 import { Ending } from "./GameLayer/Ending";
-import { SaveData } from "#/Model/Element/SaveData";
-import { IPhaserConfigFactory } from "./interfaces";
+import { PhaserGame } from "./PhaserGame";
 
 export type EndingSceneImageKeys =
     "ending1" | "ending2"
@@ -26,19 +25,18 @@ export class EndingScene implements IEnding{
 
     private readonly background: string;
 
-    private readonly phaserConfigFactory: IPhaserConfigFactory;
-    private phaserGame : Phaser.Game | null = null;
+    private readonly phaserGame: PhaserGame;
 
     constructor(
         subscriber: number,
         background: string,
-        phaserConfigFactory: IPhaserConfigFactory
+        phaserGame: PhaserGame
     ){
         this.event = new EventEmitter();
         this._onExit = new EventPort("OnExit", this.event);
 
         this.background = background;
-        this.phaserConfigFactory = phaserConfigFactory;
+        this.phaserGame = phaserGame;
 
         this.ending = new Ending(
             subscriber,
@@ -66,16 +64,10 @@ export class EndingScene implements IEnding{
             }
         );
 
-        const config = this.phaserConfigFactory.Create();
-        config["scene"] = scene;
-        this.phaserGame = new Phaser.Game(
-            config
-        );
+        this.phaserGame.Switch(scene);
     }
 
     Destroy(){
         this.ending.Destory();
-        if(this.phaserGame === null) return;
-        this.phaserGame.destroy(true, false);
     }
 }
