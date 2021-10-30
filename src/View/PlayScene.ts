@@ -11,7 +11,7 @@ import { StageFailEnd } from "./GameLayer/StargeFailEnd";
 import { IPlayStage } from "Model/interfaces";
 import { EventEmitter, EventPort } from "Model/Utils/EventEmitter";
 import { SaveData } from "Model/Element/SaveData";
-import { ILiveAreaDrawer } from "./interfaces";
+import { ILiveAreaDrawer, IPhaserConfigFactory } from "./interfaces";
 import { AreaType, Factory as AreaFactory } from "./LiveAreaDrawer/Factory";
 import { MessageOk } from "./GameLayer/MessageOk";
 import { Help } from "./GameLayer/Help";
@@ -76,6 +76,7 @@ export class PlayScene implements IPlayStage{
     private readonly _caption: string;
     get caption(): string { return this._caption; }
 
+    private readonly phaserConfigFactory: IPhaserConfigFactory;
     private phaserGame : Phaser.Game | null = null;
 
     constructor(
@@ -85,6 +86,7 @@ export class PlayScene implements IPlayStage{
         helpImageKeys: string[],
         stageAudiences: (string | number)[][],
         memberConfig: memberConfigKeys[],
+        phaserConfigFactory: IPhaserConfigFactory,
         model: Model
     ){
         this._title = title;
@@ -93,6 +95,7 @@ export class PlayScene implements IPlayStage{
         this.sceneImages = sceneImages;
         this.helpImageKeys = helpImageKeys;
         this.memberConfig = memberConfig;
+        this.phaserConfigFactory = phaserConfigFactory;
         this.model = model;
 
         this.event = new EventEmitter();
@@ -299,7 +302,11 @@ export class PlayScene implements IPlayStage{
             }
         );
 
-        this.phaserGame = new Phaser.Game(scene.config);
+        const config = this.phaserConfigFactory.Create();
+        config["scene"] = scene;
+        this.phaserGame = new Phaser.Game(
+            config
+        );
     }
 
     Destroy(){

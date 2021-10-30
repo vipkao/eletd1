@@ -1,3 +1,4 @@
+import { PhaserScene } from "./PhaserScene";
 
 /**
  * ゲーム画面で使用するために各種コンポーネントが纏められたレイヤーの機能。
@@ -13,4 +14,12 @@ export interface IGameLayer {
 export interface ILiveAreaDrawer{
     Fill(x: number, y:number, graphics: Phaser.GameObjects.Graphics): Phaser.GameObjects.Graphics;
     Stroke(x: number, y:number, graphics: Phaser.GameObjects.Graphics): Phaser.GameObjects.Graphics;
+}
+
+/**
+ * GameConfigを生成する実装。
+ */
+export interface IPhaserConfigFactory{
+    Create(
+    ): Phaser.Types.Core.GameConfig
 }

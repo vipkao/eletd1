@@ -7,6 +7,8 @@ import { StageFactory } from "./View/SceneFactory/StageFactory";
 import { TitleSceneImageKeys } from "./View/TitleScene";
 import { EndingFactory } from "./View/SceneFactory/EndingFactory";
 import { EndingSceneImageKeys } from "./View/EndingScene";
+import { PcFactory } from "./View/SceneFactory/PcFactory";
+import { IPhaserConfigFactory } from "./View/interfaces";
 
 declare const TITLE_IMAGES : { [key in TitleSceneImageKeys]: string };
 declare const SCENE_IMAGES : { [key in PlaySceneImageKeys]: string };
@@ -22,18 +24,27 @@ declare const STAGES : (string | number)[][];
 declare const __START_STAGE_INDEX : number;
 declare const __INITIAL_SUBSCRIBER: number;
 
+declare const __DEVICE: string;
+
+const phaserConfigFactory = (():IPhaserConfigFactory => {
+    if(__DEVICE == "pc") return new PcFactory();
+    if(__DEVICE == "sp") return new PcFactory();
+    throw new Error("not support:"+__DEVICE);
+})();
+
 const stageFactories = StageFactory.CreateArray(
     SCENE_IMAGES,
     HELP_IMAGES,
     STAGES,
     MEMBER_TEMPLATE, STAGE_MEMBERS,
-    AUDIENCE_SCORE_TEMPLATE, AUDIENCE_ROUTE_TEMPLATE, STAGE_AUDIENCES
+    AUDIENCE_SCORE_TEMPLATE, AUDIENCE_ROUTE_TEMPLATE, STAGE_AUDIENCES,
+    phaserConfigFactory
 );
 
 const director = new StageDirector(
-    new TitleFactory(TITLE_IMAGES, HELP_IMAGES),
+    new TitleFactory(TITLE_IMAGES, HELP_IMAGES, phaserConfigFactory),
     stageFactories,
-    new EndingFactory(ENDING_IMAGES)
+    new EndingFactory(ENDING_IMAGES, phaserConfigFactory)
 );
 const saveData = new SaveData();
 saveData.subscribers = __INITIAL_SUBSCRIBER;

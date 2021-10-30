@@ -1,6 +1,7 @@
 import { SaveData } from "Model/Element/SaveData";
 import { IPlayStage, IPlayStageFactory } from "Model/interfaces";
 import { PlaySceneFacade } from "Model/PlaySceneFacade";
+import { IPhaserConfigFactory } from "../interfaces";
 import { PlayScene, PlaySceneImageKeys } from "../PlayScene";
 
 export class StageFactory implements IPlayStageFactory{
@@ -13,6 +14,7 @@ export class StageFactory implements IPlayStageFactory{
     private readonly audienceScoreTemplate: {[key:string]: (number | number[][])[]};
     private readonly audienceRouteTemplate: {[key:string]: (number | number[][])[]};
     private readonly stageAudiences: (string | number)[][];
+    private readonly phaserConfigFactory: IPhaserConfigFactory;
 
     constructor(
         playSceneImages: { [key in PlaySceneImageKeys]: string },
@@ -22,7 +24,8 @@ export class StageFactory implements IPlayStageFactory{
         stageMembers: (string | number[] | number[][])[][],
         audienceScoreTemplate: {[key:string]: (number | number[][])[]},
         audienceRouteTemplate: {[key:string]: (number | number[][])[]},
-        stageAudiences: (string | number)[][]
+        stageAudiences: (string | number)[][],
+        phaserConfigFactory: IPhaserConfigFactory
     ){
         this.playSceneImages = playSceneImages;
         this.helpImages = helpImages;
@@ -32,6 +35,7 @@ export class StageFactory implements IPlayStageFactory{
         this.audienceScoreTemplate = audienceScoreTemplate;
         this.audienceRouteTemplate = audienceRouteTemplate;
         this.stageAudiences = stageAudiences;
+        this.phaserConfigFactory = phaserConfigFactory;
     }
 
     Create(saveData: SaveData): IPlayStage {
@@ -47,6 +51,7 @@ export class StageFactory implements IPlayStageFactory{
             this.helpImages,
             this.stageAudiences,
             PlayScene.CreateMemberConfigs(this.stageMembers),
+            this.phaserConfigFactory,
             new PlaySceneFacade(
                 maxLiveSpace,
                 saveData.subscribers, saveData.subscribers + targetSubscriberDelta,
@@ -76,7 +81,8 @@ export class StageFactory implements IPlayStageFactory{
         stageMember: (string | number[])[][][],
         audienceScoreTemplate: {[key:string]: (number | number[][])[]},
         audienceRouteTemplate: {[key:string]: (number | number[][])[]},
-        stageAudiences: (string | number)[][][]
+        stageAudiences: (string | number)[][][],
+        phaserConfigFactory: IPhaserConfigFactory
     ): StageFactory[]{
         const ret = [...Array(stages.length)].map((_, i) => {
             return new StageFactory(
@@ -87,7 +93,8 @@ export class StageFactory implements IPlayStageFactory{
                 stageMember[i],
                 audienceScoreTemplate,
                 audienceRouteTemplate,
-                stageAudiences[i]
+                stageAudiences[i],
+                phaserConfigFactory
             );
         });
         return ret;

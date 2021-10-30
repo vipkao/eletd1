@@ -4,6 +4,7 @@ import { IEnding } from "Model/interfaces";
 import { EventEmitter, EventPort } from "Model/Utils/EventEmitter";
 import { Ending } from "./GameLayer/Ending";
 import { SaveData } from "#/Model/Element/SaveData";
+import { IPhaserConfigFactory } from "./interfaces";
 
 export type EndingSceneImageKeys =
     "ending1" | "ending2"
@@ -25,16 +26,19 @@ export class EndingScene implements IEnding{
 
     private readonly background: string;
 
+    private readonly phaserConfigFactory: IPhaserConfigFactory;
     private phaserGame : Phaser.Game | null = null;
 
     constructor(
         subscriber: number,
-        background: string
+        background: string,
+        phaserConfigFactory: IPhaserConfigFactory
     ){
         this.event = new EventEmitter();
         this._onExit = new EventPort("OnExit", this.event);
 
         this.background = background;
+        this.phaserConfigFactory = phaserConfigFactory;
 
         this.ending = new Ending(
             subscriber,
@@ -62,7 +66,11 @@ export class EndingScene implements IEnding{
             }
         );
 
-        this.phaserGame = new Phaser.Game(scene.config);
+        const config = this.phaserConfigFactory.Create();
+        config["scene"] = scene;
+        this.phaserGame = new Phaser.Game(
+            config
+        );
     }
 
     Destroy(){
