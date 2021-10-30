@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES5",
+    "module": "ES2015",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "baseUrl": "./src/",
+    "lib": [
+      "ES2015" ,"DOM"
+    ],
+    "typeRoots": [
+      "./node_modules/phaser/types"
+    ],
+    "types": [
+        "Phaser", "@types/jest"
+    ],
+    "paths": {
+      "#/*": ["*"]
+    },    
+  }
+}
