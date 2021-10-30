@@ -72,7 +72,6 @@ export class TitleScene implements ITitle{
     Start(saveData: SaveData): void{
 
         const scene = new PhaserScene(
-            "タイトル",
             s => {
                 for(const k in this.images){
                     const v = this.images[k as TitleSceneImageKeys];

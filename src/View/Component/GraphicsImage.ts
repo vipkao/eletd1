@@ -111,7 +111,7 @@ export class GraphicsImage implements IGameLayer{
         if(this.textureKey !== ""){
             this.scene.textures.get(this.textureKey).destroy();
         }else{
-            this.textureKey = [...Array(16)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+            this.textureKey = [...Array(32)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
             console.log(this.textureKey);    
         }
 

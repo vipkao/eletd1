@@ -256,7 +256,6 @@ export class PlayScene implements IPlayStage{
 
     Start(): void{
         const scene = new PhaserScene(
-            this._title,
             s => {
                 s.load.image(this.stageImage, this.stageImage);
                 for(const k in this.sceneImages){

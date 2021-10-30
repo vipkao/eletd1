@@ -2,6 +2,10 @@ import { PhaserScene } from "./PhaserScene";
 
 export type DEVICE_TYPE = "pc" | "sp";
 
+/**
+ * Phaser.gameを使いまわせるようにした実装。
+ * Phaser.gameを使いまわすことで、おそらくメモリーリーク的なのがかなり軽減された。
+ */
 export class PhaserGame{
 
     static PC_CONFIG = {
@@ -26,7 +30,7 @@ export class PhaserGame{
 
 
     public readonly game: Phaser.Game;
-    private prevScene: PhaserScene | null = null;
+    private prevKey: string = "";
     
     constructor(
         config: Phaser.Types.Core.GameConfig
@@ -35,15 +39,13 @@ export class PhaserGame{
     }
 
     Switch(newScene: PhaserScene){
-        this.game.scene.add(newScene.name, newScene);
-        this.game.scene.run(newScene.name);
-        console.log("start:"+newScene.name);
-        if(this.prevScene !== null){
-            this.game.scene.stop(this.prevScene.name);
-            this.game.scene.remove(this.prevScene.name);
-            console.log("stop:"+this.prevScene.name);
+        this.game.scene.add(newScene.key, newScene);
+        this.game.scene.run(newScene.key);
+        if(this.prevKey !== ""){
+            this.game.scene.stop(this.prevKey);
+            this.game.scene.remove(this.prevKey);
         }
-        this.prevScene = newScene;
+        this.prevKey = newScene.key;
         
     }
 

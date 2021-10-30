@@ -52,7 +52,6 @@ export class EndingScene implements IEnding{
     Start(): void{
 
         const scene = new PhaserScene(
-            "タイトル",
             s => {
                 if(!s.textures.exists(this.background))
                     s.load.image(this.background, this.background);
