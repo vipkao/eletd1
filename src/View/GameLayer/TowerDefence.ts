@@ -34,6 +34,7 @@ export class TowerDefence implements IGameLayer{
         stageBaseImageKey: string,
         listenImageKey: string,
         goodImageKey: string,
+        numberAtlasImageKey: string,
         audienceImageIdKeys: {[key: number]: string},
         member50ImageIdKeys: {[key: number]: string},
         memberLiveAreaIdKeys: {[key: number]: ILiveAreaDrawer}
@@ -70,7 +71,8 @@ export class TowerDefence implements IGameLayer{
         this.audienceImages = {};
         this.model.element.audiences.all.forEach(a => {
             const image = new AudienceImage(
-                this.layer, a.maxSatisfaction, audienceImageIdKeys[a.id], goodImageKey, listenImageKey
+                this.layer, a.maxSatisfaction,
+                audienceImageIdKeys[a.id], goodImageKey, listenImageKey, numberAtlasImageKey
             )
             this.audienceImages[a.id] = image;
 

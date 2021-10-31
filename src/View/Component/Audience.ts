@@ -23,6 +23,7 @@ export class Audience implements IGameLayer {
     private readonly image50Key: string;
     private readonly goodImageKey: string;
     private readonly listenImageKey: string;
+    private readonly numberAtlasImageKey: string;
 
     constructor(
         layer: Layer,
@@ -30,6 +31,7 @@ export class Audience implements IGameLayer {
         image50Key: string,
         goodImageKey: string,
         listenImageKey: string,
+        numberAtlasImageKey: string
     ){
         this.layer = layer;
         
@@ -38,6 +40,7 @@ export class Audience implements IGameLayer {
         this.image50Key = image50Key;
         this.goodImageKey = goodImageKey;
         this.listenImageKey = listenImageKey;
+        this.numberAtlasImageKey = numberAtlasImageKey;
     }
 
     SetScene(scene: Phaser.Scene): Audience{
@@ -107,6 +110,7 @@ export class Audience implements IGameLayer {
                 count, this.scene, this.container
             );    
         }
+        //new SatisfactionImage(count, this.numberAtlasImageKey, this.scene, this.container);
 
         this.nowSatisfaction += count;
         this.satisfactionGauge?.Change(this.nowSatisfaction);
@@ -195,7 +199,82 @@ class SatisfactionGauge{
     }
 }
 
+/**
+ * あまり早くないし、どういう訳か真っ黒になるタイミングがあるのでＮＧ。
+ */
+class SatisfactionImage{
+    private readonly rt: Phaser.GameObjects.RenderTexture;
+    private readonly tween: Phaser.Tweens.Tween;
+    private readonly container: Phaser.GameObjects.Container;
+    constructor(
+        count: number,
+        atlasImageKey: string,
+        scene: Phaser.Scene,
+        container: Phaser.GameObjects.Container
+    ){
+        this.rt = this.BuildNumberRenderTexture(count, atlasImageKey, scene);
+        const x = Math.random()*20 - 25;
+        const y = Math.random()*20 - 25;
+        //const x = -5;
+        //const y = -5;
+        this.rt.setPosition(x, y);
+        this.container = container;
+        container.add(this.rt);
+        this.tween = scene.tweens.add({
+            targets: this.rt,
+            duration: 1000,
+            y:{ start: y, to:y-10, ease: "Expo.easeOut" },
+            alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
+            onComplete: () => {
+                this.tween.stop();
+                this.tween.remove();
+                this.container.remove(this.rt);
+                this.rt.destroy();
+            }
+        });
+    }
 
+    private BuildNumberArray(count: number): string[]{
+        const sign = count > 0 ? "+" : count < 0 ? "-" : "";
+        const ret = (sign + count.toString()).split("");
+        return ret;
+    }
+
+    private BuildNumberRenderTexture(
+        count: number,
+        atlasImageKey: string,
+        scene: Phaser.Scene
+    ): Phaser.GameObjects.RenderTexture{
+        const numberArray = this.BuildNumberArray(count);
+        const atlasTexture = scene.textures.get(atlasImageKey);
+        const numberFrames = numberArray.map(n => {
+            const ret = atlasTexture.get(n);
+            return ret;
+        });
+        const lapWidth = 8;
+        const totalWidth = numberFrames.map(f => f.width).reduce((a, b) => a+b) - (numberFrames.length - 1) * lapWidth;
+        const ret = new Phaser.GameObjects.RenderTexture(scene, 0, 0, totalWidth, numberFrames[0].height);
+
+        const drawFns:(() => void)[] = [];
+        let x = 0;
+        const BuildDrawFn = (x: number, key: string) => {
+            return () => {ret.drawFrame(atlasImageKey, key, x, 0)};
+        };
+        numberFrames.forEach((f, i) => {
+            drawFns.push(BuildDrawFn(x, f.name));
+            x += f.width - lapWidth;
+        });
+
+        ret.beginDraw();
+        drawFns.reverse().forEach(fn => {
+            fn();
+        });
+        ret.endDraw();
+
+        return ret;
+    }
+
+}
 /**
  * 処理速度アップのために、Textを再利用するようにした。
  */

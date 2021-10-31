@@ -29,6 +29,9 @@ export type PlaySceneImageKeys =
     | "infoListen"
     | "help1" | "help2" | "help3" | "help4"
     ;
+export type PlaySceneAtlasImageKeys = 
+    "50number"
+    ;
 
 type memberConfigKeys = {
     "200Image": string, "50Image": string, "area": ILiveAreaDrawer
@@ -55,6 +58,7 @@ export class PlayScene implements IPlayStage{
     }
 
     private readonly sceneImages: { [key in PlaySceneImageKeys]: string };
+    private readonly sceneAtlasImages: { [key in PlaySceneAtlasImageKeys]: string };
     private readonly memberConfig: memberConfigKeys[];
     private readonly audienceImageIdKey: { [key: number]: string };
     private readonly helpImageKeys: string[];
@@ -83,6 +87,7 @@ export class PlayScene implements IPlayStage{
         title: string, caption: string,
         stageImage: string,
         sceneImages: { [key in PlaySceneImageKeys]: string },
+        sceneAtlasImages: { [key in PlaySceneAtlasImageKeys]: string },
         helpImageKeys: string[],
         stageAudiences: (string | number)[][],
         memberConfig: memberConfigKeys[],
@@ -93,6 +98,7 @@ export class PlayScene implements IPlayStage{
         this._caption = caption;
         this.stageImage = `images/${stageImage}.jpg`;
         this.sceneImages = sceneImages;
+        this.sceneAtlasImages = sceneAtlasImages;
         this.helpImageKeys = helpImageKeys;
         this.memberConfig = memberConfig;
         this.phaserGame = phaserGame;
@@ -137,6 +143,7 @@ export class PlayScene implements IPlayStage{
             this.stageImage,
             sceneImages["infoListen"],
             sceneImages["signGood"],
+            sceneAtlasImages["50number"],
             this.audienceImageIdKey,
             member50ImageIdKey,
             memberLiveAreaIdKey
@@ -260,9 +267,13 @@ export class PlayScene implements IPlayStage{
                 s.load.image(this.stageImage, this.stageImage);
                 for(const k in this.sceneImages){
                     const v = this.sceneImages[k as PlaySceneImageKeys];
-                    //キャッシュが効いているかと思ったが、常にfalseを返してるので意味がなさそう。
                     if(s.textures.exists(v)) continue;
                     s.load.image(v, v);
+                }
+                for(const k in this.sceneAtlasImages){
+                    const v = this.sceneAtlasImages[k as PlaySceneAtlasImageKeys];
+                    if(s.textures.exists(v)) continue;
+                    s.load.atlas(v, v, v + ".json");
                 }
                 const audienceSet = new Set<string>();
                 for(const k in this.audienceImageIdKey){

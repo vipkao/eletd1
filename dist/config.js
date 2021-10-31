@@ -48,6 +48,10 @@ const SCENE_IMAGES = {
     "infoListen": "images/info_listen1.png",
 };
 
+const SCENE_ATLAS_IMAGES = {
+    "50number" : "images/50number1.png"
+};
+
 const TITLE_IMAGES = {
     "background": "images/title1.jpg",
     "newButton": "images/title_new1.png",

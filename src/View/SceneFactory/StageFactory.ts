@@ -2,11 +2,12 @@ import { SaveData } from "Model/Element/SaveData";
 import { IPlayStage, IPlayStageFactory } from "Model/interfaces";
 import { PlaySceneFacade } from "Model/PlaySceneFacade";
 import { PhaserGame } from "../PhaserGame";
-import { PlayScene, PlaySceneImageKeys } from "../PlayScene";
+import { PlayScene, PlaySceneAtlasImageKeys, PlaySceneImageKeys } from "../PlayScene";
 
 export class StageFactory implements IPlayStageFactory{
 
     private readonly playSceneImages: { [key in PlaySceneImageKeys]: string };
+    private readonly playSceneAtlasImages: { [key in PlaySceneAtlasImageKeys]: string };
     private readonly helpImages: string[];
     private readonly stage: (string | number)[];
     private readonly memberTemplate: { [key: string]: (number[][])[] };
@@ -18,6 +19,7 @@ export class StageFactory implements IPlayStageFactory{
 
     constructor(
         playSceneImages: { [key in PlaySceneImageKeys]: string },
+        playSceneAtlasImages: { [key in PlaySceneAtlasImageKeys]: string },
         helpImages: string[],
         stage: (string | number)[],
         memberTemplate: { [key: string]: (number[][])[] },
@@ -28,6 +30,7 @@ export class StageFactory implements IPlayStageFactory{
         phaserGame: PhaserGame
     ){
         this.playSceneImages = playSceneImages;
+        this.playSceneAtlasImages = playSceneAtlasImages;
         this.helpImages = helpImages;
         this.stage = stage;
         this.memberTemplate = memberTemplate;
@@ -48,6 +51,7 @@ export class StageFactory implements IPlayStageFactory{
         const ret = new PlayScene(
             title, caption, stageImage,
             this.playSceneImages,
+            this.playSceneAtlasImages,
             this.helpImages,
             this.stageAudiences,
             PlayScene.CreateMemberConfigs(this.stageMembers),
@@ -75,6 +79,7 @@ export class StageFactory implements IPlayStageFactory{
 
     static CreateArray(
         playSceneImages: { [key in PlaySceneImageKeys]: string },
+        playSceneAtlasImages: { [key in PlaySceneAtlasImageKeys]: string },
         helpImages: string[],
         stages: (string | number)[][],
         memberTemplate: { [key: string]: (number[][])[] },
@@ -87,6 +92,7 @@ export class StageFactory implements IPlayStageFactory{
         const ret = [...Array(stages.length)].map((_, i) => {
             return new StageFactory(
                 playSceneImages,
+                playSceneAtlasImages,
                 helpImages,
                 stages[i],
                 memberTemplate,

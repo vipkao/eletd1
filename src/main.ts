@@ -2,7 +2,7 @@ import "phaser";
 import { StageDirector } from "./Model/StageDirector";
 import { TitleFactory } from "./View/SceneFactory/TitleFactory";
 import { SaveData } from "./Model/Element/SaveData";
-import { PlaySceneImageKeys } from "./View/PlayScene";
+import { PlaySceneAtlasImageKeys, PlaySceneImageKeys } from "./View/PlayScene";
 import { StageFactory } from "./View/SceneFactory/StageFactory";
 import { TitleSceneImageKeys } from "./View/TitleScene";
 import { EndingFactory } from "./View/SceneFactory/EndingFactory";
@@ -11,6 +11,7 @@ import { DEVICE_TYPE, PhaserGame } from "./View/PhaserGame";
 
 declare const TITLE_IMAGES : { [key in TitleSceneImageKeys]: string };
 declare const SCENE_IMAGES : { [key in PlaySceneImageKeys]: string };
+declare const SCENE_ATLAS_IMAGES : { [key in PlaySceneAtlasImageKeys]: string };
 declare const HELP_IMAGES : string[];
 declare const ENDING_IMAGES : { [key in EndingSceneImageKeys]: string };
 declare const MEMBER_TEMPLATE : { [key: string]: (number[][])[] };
@@ -29,6 +30,7 @@ const phaserGame = new PhaserGame(PhaserGame.GetConfig(__DEVICE));
 
 const stageFactories = StageFactory.CreateArray(
     SCENE_IMAGES,
+    SCENE_ATLAS_IMAGES,
     HELP_IMAGES,
     STAGES,
     MEMBER_TEMPLATE, STAGE_MEMBERS,
