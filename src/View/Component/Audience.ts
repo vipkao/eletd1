@@ -16,6 +16,7 @@ export class Audience implements IGameLayer {
     private goodImage: Phaser.GameObjects.Image | null = null;
     private listenImage: Phaser.GameObjects.Image | null = null;
     private satisfactionGauge: Phaser.GameObjects.Graphics | null = null;
+    private satisfactionText: SatisfactionText | null = null;
     
     private readonly maxSatisfaction: number;
     private nowSatisfaction: number;
@@ -96,24 +97,15 @@ export class Audience implements IGameLayer {
 
     AddSatisfaction(count: number): Audience{
         if(this.scene === null) return this;
+        if(this.container === null) return this;
 
-        const x = Math.random()*10 - 15;
-        const y = Math.random()*10 - 15;
-        const text = new Phaser.GameObjects.Text(this.scene, x, y, "+"+count.toString(),{})
-            .setColor("#000000").setFontSize(20).setStroke("#FFFFFF", 2)
-            .setShadow(0, 0, "#FFFFFF", 3, true);
-        this.container?.add(text);
-        const textTween = this.scene.tweens.add({
-            targets: text,
-            duration: 2000,
-            y:{ start: y, to:y-10, ease: "Expo.easeOut" },
-            alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
-            onComplete: () => {
-                text.destroy();
-                textTween.remove();
-                textTween.stop();
-            }
-        });
+        if(this.satisfactionText !== null){
+            this.satisfactionText.Restart(count);
+        }else{
+            this.satisfactionText = new SatisfactionText(
+                count, this.scene, this.container
+            );    
+        }
 
         this.nowSatisfaction += count;
         this.UpdateSatisfactionGauge();
@@ -152,12 +144,12 @@ export class Audience implements IGameLayer {
     }
     
     Destory(): void{
-        //がんばってdestroyしているけど、どうにもメモリ消費量が減らない。
         //ここもdestroy(true)をするとエラーになる。
         this.image?.destroy();
         this.goodImage?.destroy();
         this.listenImage?.destroy();
         this.satisfactionGauge?.destroy();
+        this.satisfactionText?.Destory();
         this.container?.destroy(true);
     }
 
@@ -168,4 +160,64 @@ export class Audience implements IGameLayer {
             .fillStyle(0x000000, 1).fillRect(-25+50*ratio, 20, 50-50*ratio, 5)
     }
 
+}
+
+
+/**
+ * 処理速度アップのために、Textを再利用するようにした。
+ */
+class SatisfactionText{
+    private readonly text: Phaser.GameObjects.Text;
+    private readonly tween: Phaser.Tweens.Tween;
+    private readonly container: Phaser.GameObjects.Container;
+    private nowCount: number = 0;
+    constructor(
+        count: number,
+        scene: Phaser.Scene,
+        container: Phaser.GameObjects.Container
+    ){
+        // const x = Math.random()*20 - 25;
+        // const y = Math.random()*20 - 25;
+        const x = -5;
+        const y = -5;
+        this.container = container;
+        this.nowCount = count;
+        //Textの生成は想像以上に重い模様。Canvas APIを使って描画しているから？
+        this.text = new Phaser.GameObjects.Text(scene, x, y, "+"+count.toString(),{})
+            .setColor("#000000").setFontSize(25).setStroke("#FFFFFF", 2)
+            .setShadow(0, 0, "#FFFFFF", 3, true);
+        container.add(this.text);
+        this.tween = scene.tweens.add({
+            targets: this.text,
+            duration: 1000,
+            y:{ start: y, to:y-10, ease: "Expo.easeOut" },
+            alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
+            onComplete: () => {
+                this.tween.stop();
+            }
+        });
+    }
+
+    Restart(count: number){
+        // const x = Math.random()*10 - 15;
+        // const y = Math.random()*10 - 15;
+        const x = -5;
+        const y = -5;
+        if(this.nowCount === count){
+            this.text.setPosition(x, y);
+        }else{
+            this.text.setText("+"+count.toString()).setPosition(x, y);
+            this.nowCount = count;
+        }
+        this.tween.restart();
+    }
+
+    Destory(){
+        this.tween.stop();
+        this.tween.remove();
+        this.container.remove(this.text);
+        this.text.destroy();
+        //tweenにdestroyはない
+        //this.tween.destroy();
+    }
 }

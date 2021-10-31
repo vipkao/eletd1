@@ -82,9 +82,11 @@ export class LiveInfo implements IGameLayer{
         this.model.element.subscriber.OnNowChanged.on((count, delta) => {
             this.subscribedCount.SetValues(count, this.model.element.subscriber.target);
             if(this.scene !== null && delta !== 0){
+                const dx = Math.random() * 20 - 10;
+                const dy = Math.random() * 20 - 10;
                 const sign = delta < 0 ? "－" : "＋";
-                const text = new Phaser.GameObjects.Text(this.scene, 990, 20, sign+Math.abs(delta).toString(),{})
-                    .setColor("#000000").setFontSize(20).setStroke("#000000", 1)
+                const text = new Phaser.GameObjects.Text(this.scene, 990+dx, 20+dy, sign+Math.abs(delta).toString(),{})
+                    .setColor("#000000").setFontSize(25)//.setStroke("#000000", 1)
                     .setShadow(0, 0, "#FFFFFF", 3, true);
                 const y = delta < 0 ? 10 : -10;
                 this.layer.Setting(l => l.add(text));
