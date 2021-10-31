@@ -15,7 +15,7 @@ export class Audience implements IGameLayer {
     private image: Phaser.GameObjects.Image | null = null;
     private goodImage: Phaser.GameObjects.Image | null = null;
     private listenImage: Phaser.GameObjects.Image | null = null;
-    private satisfactionGauge: Phaser.GameObjects.Graphics | null = null;
+    private satisfactionGauge: SatisfactionGauge | null = null;
     private satisfactionText: SatisfactionText | null = null;
     
     private readonly maxSatisfaction: number;
@@ -69,12 +69,13 @@ export class Audience implements IGameLayer {
         this.goodImage = goodImage;
         this.container.add(goodImage);
         
-        const satisfactionGauge = new Phaser.GameObjects.Graphics(
-            this.scene
+        const satisfactionGauge = new SatisfactionGauge(
+            this.maxSatisfaction,
+            this.scene,
+            this.container
         );
         this.satisfactionGauge = satisfactionGauge;
-        this.container.add(satisfactionGauge);
-        this.UpdateSatisfactionGauge();
+        this.satisfactionGauge.Change(0);
 
         this.layer.Setting(l => l.add(container));
         return this;
@@ -108,7 +109,7 @@ export class Audience implements IGameLayer {
         }
 
         this.nowSatisfaction += count;
-        this.UpdateSatisfactionGauge();
+        this.satisfactionGauge?.Change(this.nowSatisfaction);
 
         return this;
     }
@@ -116,7 +117,7 @@ export class Audience implements IGameLayer {
     ShowGood(): Audience{
         this.goodImage?.setVisible(true);
         this.listenImage?.setVisible(false);
-        this.satisfactionGauge?.setVisible(false);
+        this.satisfactionGauge?.Hide();
         const imageTween = this.scene?.tweens.add({
             targets: this.image,
             ease: "Cubic.easeOut",
@@ -148,18 +149,50 @@ export class Audience implements IGameLayer {
         this.image?.destroy();
         this.goodImage?.destroy();
         this.listenImage?.destroy();
-        this.satisfactionGauge?.destroy();
+        this.satisfactionGauge?.Destroy();
         this.satisfactionText?.Destory();
         this.container?.destroy(true);
     }
+}
 
-    private UpdateSatisfactionGauge(){
-        const ratio = this.nowSatisfaction / this.maxSatisfaction;
-        this.satisfactionGauge?.clear()
-            .fillStyle(0x00FF00, 1).fillRect(-25, 20, 50*ratio, 5)
-            .fillStyle(0x000000, 1).fillRect(-25+50*ratio, 20, 50-50*ratio, 5)
+class SatisfactionGauge{
+
+    private readonly max: number;
+    private readonly base: Phaser.GameObjects.Rectangle;
+    private readonly fill: Phaser.GameObjects.Rectangle;
+    private readonly container: Phaser.GameObjects.Container;
+
+    constructor(
+        max: number,
+        scene: Phaser.Scene,
+        container: Phaser.GameObjects.Container
+    ){
+        this.max = max;
+        this.base = new Phaser.GameObjects.Rectangle(
+            scene, -25, 20, 50, 5, 0x000000, 1
+        ).setOrigin(0);
+        this.fill = new Phaser.GameObjects.Rectangle(
+            scene, -25, 20, 1, 5, 0x00FF00, 1
+        ).setOrigin(0);
+        container.add(this.base);
+        container.add(this.fill);
+        this.container = container;
     }
 
+    Change(now: number){
+        const ratio = now / this.max;
+        this.fill.setSize(Math.ceil(50*ratio), 5);
+    }
+
+    Hide(){
+        this.base.setVisible(false);
+        this.fill.setVisible(false);
+    }
+
+    Destroy(){
+        this.container.remove(this.base);
+        this.container.remove(this.fill);
+    }
 }
 
 
