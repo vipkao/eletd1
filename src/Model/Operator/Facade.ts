@@ -33,6 +33,7 @@ export class Facade{
         normalDelta: number,
         highDelta: number,
         defaultSpeed: SpeedType,
+        defaultStop: boolean,
         memberChangeLimit: number,
         liveSpace: ILiveSpace,
         subscriber: ISubscriber,
@@ -41,7 +42,8 @@ export class Facade{
         this._speedChanger = new PresetDelta(
             normalDelta,
             highDelta,
-            defaultSpeed
+            defaultSpeed,
+            defaultStop
         );
 
         this._memberChanger = new PresetLimit(

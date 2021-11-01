@@ -12,6 +12,8 @@ import { Nop as NopHighlighter } from "../Component/Customize/Highlighter/Nop";
 import { RepeatRectangle } from "../Component/Customize/Flasher/RepeatRectangle";
 import { DownToClick } from "../Component/Customize/ClickDetector/DownToClick";
 
+type StopButtonImageKeys = "run" | "stop";
+
 /**
  * 画面右の登録者数や配信中メンバーの一覧の画面。
  * 画面左のＴＤパートは対象外。
@@ -52,7 +54,10 @@ export class LiveInfo implements IGameLayer{
     private readonly liveSpaceOkImages: Image[];
     private readonly liveSpaceNgImages: Image[];
     private readonly speedButton: Button<void>;
-    private readonly speedButtonImages: { [key in SpeedType]: Image };
+    private readonly speedButtonActiveImages: { [key in SpeedType]: Image };
+    private readonly speedButtonStopImages: { [key in SpeedType]: Image };
+    private readonly stopButton: Button<void>;
+    private readonly stopButtonImages: { [key in StopButtonImageKeys]: Image};
     private readonly helpButton: Button<void>;
 
     constructor(
@@ -62,6 +67,10 @@ export class LiveInfo implements IGameLayer{
         speed1ImageKey: string,
         speed2ImageKey: string,
         speed3ImageKey: string,
+        speed4ImageKey: string,
+        speed5ImageKey: string,
+        speed6ImageKey: string,
+        speed7ImageKey: string,
         liveSpaceOkImageKey: string,
         liveSpaceNgImageKey: string,
         memberImageIdKeys: {[key: number]: string},
@@ -159,6 +168,16 @@ export class LiveInfo implements IGameLayer{
             this.model.operator.speedChanger.ChangeNext();
         });
 
+        this.stopButton = new Button<void>(
+            this.layer, 900, 700, 100, 100, undefined,
+            new RectangleBreath(0xFFFFFF, 0.5, 10),
+            new RepeatRectangle(0xFFFFFF, 0.5, 2, 100, 1),
+            new DownToClick(0)
+        );
+        this.stopButton.OnDown.on(_ => {
+            this.model.operator.speedChanger.StopOrResume();
+        });
+
         this.helpButton = new Button<void>(
             this.layer, 1100, 700, 100, 100, undefined,
             new RectangleBreath(0xFFFFFF, 0.5, 1),
@@ -184,17 +203,33 @@ export class LiveInfo implements IGameLayer{
             this.liveMemberImages[member.id].Setting(i => i.setVisible(false));
         });
 
-        this.speedButtonImages = {
-            "stop": new Image(this.layer, 800, 700, 100, 100, speed0ImageKey),
+        this.speedButtonActiveImages = {
             "normal": new Image(this.layer, 800, 700, 100, 100, speed1ImageKey),
             "high": new Image(this.layer, 800, 700, 100, 100, speed2ImageKey),
             "max": new Image(this.layer, 800, 700, 100, 100, speed3ImageKey),
         };
+        this.speedButtonStopImages = {
+            "normal": new Image(this.layer, 800, 700, 100, 100, speed5ImageKey),
+            "high": new Image(this.layer, 800, 700, 100, 100, speed6ImageKey),
+            "max": new Image(this.layer, 800, 700, 100, 100, speed7ImageKey),
+        }
+        this.stopButtonImages = {
+            "run": new Image(this.layer, 900, 700, 100, 100, speed0ImageKey),
+            "stop": new Image(this.layer, 900, 700, 100, 100, speed4ImageKey),
+        }
         this.model.operator.speedChanger.OnDeltaChanged.on(() => {
             this.AllSpeedButtonImageHidden();
-            this.speedButtonImages[this.model.operator.speedChanger.nowSpeed]
-                .Setting(i => i.setVisible(true));
+            if(this.model.operator.speedChanger.isStopped){
+                this.speedButtonStopImages[this.model.operator.speedChanger.nowSpeed]
+                    .Setting(i => i.setVisible(true));
+                this.stopButtonImages["stop"].Setting(i => i.setVisible(true));
+            }else{
+                this.speedButtonActiveImages[this.model.operator.speedChanger.nowSpeed]
+                    .Setting(i => i.setVisible(true));
+                this.stopButtonImages["run"].Setting(i => i.setVisible(true));
+            }
         });
+
 
         this.model.tick.OnFailEnded.on(() => {
             this.DisableButtons();
@@ -245,15 +280,31 @@ export class LiveInfo implements IGameLayer{
             b.SetScene(scene);
         });
 
-        for(const k in this.speedButtonImages){
-            const v = this.speedButtonImages[k as SpeedType];
+        for(const k in this.speedButtonActiveImages){
+            const v = this.speedButtonActiveImages[k as SpeedType];
+            v.SetScene(scene).Setting(i => i.setVisible(false));
+        }
+        for(const k in this.speedButtonStopImages){
+            const v = this.speedButtonStopImages[k as SpeedType];
+            v.SetScene(scene).Setting(i => i.setVisible(false));
+        }
+        for(const k in this.stopButtonImages){
+            const v = this.stopButtonImages[k as StopButtonImageKeys];
             v.SetScene(scene).Setting(i => i.setVisible(false));
         }
 
         this.speedButton.SetScene(scene);
+        this.stopButton.SetScene(scene);
 
-        this.speedButtonImages[this.model.operator.speedChanger.nowSpeed]
-            .Setting(i => i.setVisible(true));      
+        if(this.model.operator.speedChanger.isStopped){
+            this.speedButtonStopImages[this.model.operator.speedChanger.nowSpeed]
+                .Setting(i => i.setVisible(true));
+            this.stopButtonImages["stop"].Setting(i => i.setVisible(true));
+        }else{
+            this.speedButtonActiveImages[this.model.operator.speedChanger.nowSpeed]
+                .Setting(i => i.setVisible(true));      
+            this.stopButtonImages["run"].Setting(i => i.setVisible(true));
+        }
             
         this.helpButton.SetScene(scene);
 
@@ -287,18 +338,35 @@ export class LiveInfo implements IGameLayer{
         this.liveSpaceButtons.forEach(b => {
             b.Destory();
         });
-        for(const k in this.speedButtonImages){
-            const v = this.speedButtonImages[k as SpeedType];
+        for(const k in this.speedButtonActiveImages){
+            const v = this.speedButtonActiveImages[k as SpeedType];
+            v.Destory();
+        }
+        for(const k in this.speedButtonStopImages){
+            const v = this.speedButtonStopImages[k as SpeedType];
+            v.Destory();
+        }
+        for(const k in this.stopButtonImages){
+            const v = this.stopButtonImages[k as StopButtonImageKeys];
             v.Destory();
         }
         this.speedButton.Destory();
+        this.stopButton.Destory();
         this.helpButton.Destory();
         this.layer.Destory();
     }
 
     private AllSpeedButtonImageHidden(){
-        for(const k in this.speedButtonImages){
-            const v = this.speedButtonImages[k as SpeedType];
+        for(const k in this.speedButtonActiveImages){
+            const v = this.speedButtonActiveImages[k as SpeedType];
+            v.Setting(i => i.setVisible(false));
+        }
+        for(const k in this.speedButtonStopImages){
+            const v = this.speedButtonStopImages[k as SpeedType];
+            v.Setting(i => i.setVisible(false));
+        }
+        for(const k in this.stopButtonImages){
+            const v = this.stopButtonImages[k as StopButtonImageKeys];
             v.Setting(i => i.setVisible(false));
         }
     }

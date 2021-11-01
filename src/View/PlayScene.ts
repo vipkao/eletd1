@@ -21,6 +21,7 @@ export type PlaySceneImageKeys =
     "titleImage" | "captionImage"
     | "startButtonImage" | "liveInfoImage"
     | "speed0" | "speed1" | "speed2" | "speed3"
+    | "speed4" | "speed5" | "speed6" | "speed7"
     | "liveOK" | "liveNG"
     | "goNext" | "goRetry" | "goTitle"
     | "ok" | "cancel" | "goLeft" | "goRight" | "close"
@@ -152,6 +153,7 @@ export class PlayScene implements IPlayStage{
             model,
             sceneImages["liveInfoImage"],
             sceneImages["speed0"], sceneImages["speed1"], sceneImages["speed2"], sceneImages["speed3"],
+            sceneImages["speed4"], sceneImages["speed5"], sceneImages["speed6"], sceneImages["speed7"],
             sceneImages["liveOK"], sceneImages["liveNG"],
             member200ImageIdKey
         );

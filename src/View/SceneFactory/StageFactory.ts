@@ -59,7 +59,7 @@ export class StageFactory implements IPlayStageFactory{
             new PlaySceneFacade(
                 maxLiveSpace,
                 saveData.subscribers, saveData.subscribers + targetSubscriberDelta,
-                500, 100, "normal",
+                500, 100, "normal", false,
                 memberChangeLimit,
                 PlaySceneFacade.CreateMemberTypeA(
                     this.memberTemplate,

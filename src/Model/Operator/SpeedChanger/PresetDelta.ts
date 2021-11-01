@@ -6,6 +6,14 @@ import { ISpeedChanger, SpeedType } from "../interfaces";
  */
 export class PresetDelta implements ISpeedChanger{
 
+    private readonly event : EventEmitter;
+
+    private _onChangeDelta: EventPort<(delta: number) => void>;
+    get OnDeltaChanged(): EventPort<(delta: number) => void> {
+        return this._onChangeDelta;
+    }
+
+
     private readonly normalDelta: number;
     private readonly highDelta: number;
 
@@ -14,11 +22,9 @@ export class PresetDelta implements ISpeedChanger{
         return this._nowSpeed;
     }
 
-    private readonly event : EventEmitter;
-
-    private _onChangeDelta: EventPort<(delta: number) => void>;
-    get OnDeltaChanged(): EventPort<(delta: number) => void> {
-        return this._onChangeDelta;
+    private _isStopped: boolean;
+    get isStopped(): boolean{
+        return this._isStopped;
     }
 
     get nowDelta(): number{
@@ -29,14 +35,23 @@ export class PresetDelta implements ISpeedChanger{
     constructor(
         normalDelta: number,
         highDelta: number,
-        defaultSpeed: SpeedType
+        defaultSpeed: SpeedType,
+        defaultStopped: boolean
     ){
         this.normalDelta = normalDelta;
         this.highDelta = highDelta;
         this._nowSpeed = defaultSpeed;
 
+        this._isStopped = defaultStopped;
+
         this.event = new EventEmitter();
         this._onChangeDelta = new EventPort("OnChangeDelta", this.event);
+    }
+
+    StopOrResume(): void {
+        this._isStopped = !this._isStopped;
+
+        this.event.emit(this._onChangeDelta, this.nowDelta);
     }
 
     ChangeNext(): void {
@@ -46,7 +61,7 @@ export class PresetDelta implements ISpeedChanger{
     }
 
     private GetSpeedDelta(speed: SpeedType): number{
-        if(speed == "stop") return Number.MAX_VALUE;
+        if(this._isStopped) return Number.MAX_VALUE;
         if(speed == "normal") return this.normalDelta;
         if(speed == "high") return this.highDelta;
         if(speed == "max") return 0;
@@ -54,10 +69,9 @@ export class PresetDelta implements ISpeedChanger{
     }
 
     private GetNextSpeed(speed: SpeedType): SpeedType{
-        if(speed == "stop") return "normal";
         if(speed == "normal") return "high";
         if(speed == "high") return "max";
-        if(speed == "max") return "stop";
+        if(speed == "max") return "normal";
         throw new Error("想定されていないスピードの種類" + speed);
     }
 

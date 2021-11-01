@@ -2,16 +2,21 @@ import { IMember, IPosition } from "../Element/interfaces";
 import { SaveData } from "../Element/SaveData";
 import { EventPort } from "../Utils/EventEmitter";
 
-export type SpeedType = "stop" | "normal" | "high" | "max";
+export type SpeedType = "normal" | "high" | "max";
 
 /**
  * speedChangerによる変更を、deltaの変更イベントとして通知する機能。
  */
 export interface ISpeedChanger{
+    /**
+     * isStopedがtrueの場合は常にNumber.MAX_VALUEになる。
+     */
     get OnDeltaChanged(): EventPort<(delta: number) => void>;
     get nowDelta(): number;
     get nowSpeed(): SpeedType;
+    get isStopped(): boolean;
     ChangeNext(): void;
+    StopOrResume(): void;
 }
 
 /**
