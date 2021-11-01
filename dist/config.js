@@ -47,6 +47,7 @@ const SCENE_IMAGES = {
     "successHeader": "images/success1.png",
     "failHeader": "images/fail1.png",
     "liveWhereHeader": "images/live_where1.png",
+    "liveExit": "images/live_exit1.png",
     "selectMemberHeader": "images/select_member1.png",
     "signGood": "images/sign_good1.png",
     "infoListen": "images/info_listen1.png",

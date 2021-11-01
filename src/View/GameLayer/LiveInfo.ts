@@ -11,6 +11,7 @@ import { RectangleBreath } from "../Component/Customize/Highlighter/RectangleBre
 import { Nop as NopHighlighter } from "../Component/Customize/Highlighter/Nop";
 import { RepeatRectangle } from "../Component/Customize/Flasher/RepeatRectangle";
 import { DownToClick } from "../Component/Customize/ClickDetector/DownToClick";
+import { IMember } from "#/Model/Element/interfaces";
 
 type StopButtonImageKeys = "run" | "stop";
 
@@ -22,8 +23,8 @@ export class LiveInfo implements IGameLayer{
 
     private readonly event : EventEmitter;
     
-    private readonly _onSelected : EventPort<(index: number) => void>;
-    get OnSelected(): EventPort<(index: number) => void>{
+    private readonly _onSelected : EventPort<(index: number, member: IMember | null) => void>;
+    get OnSelected(): EventPort<(index: number, member: IMember | null) => void>{
         return this._onSelected;
     }
 
@@ -134,7 +135,7 @@ export class LiveInfo implements IGameLayer{
                 if(this.model.operator.memberChanger.remaining === 0){
                     this.event.emit(this._onSelectDenied);
                 }else{
-                    this.event.emit(this._onSelected, i);
+                    this.event.emit(this._onSelected, i, this.model.element.liveSpace.space[i]);
                 }
             });
             return ret;

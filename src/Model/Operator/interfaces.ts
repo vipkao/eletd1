@@ -30,6 +30,7 @@ export interface IMemberChanger{
      * @param position 
      */
     ChangeMember(index: number, newMember: IMember, position: IPosition): void;
+    ExitMember(index: number): void;
     get OnRemainingChanged(): EventPort<(remaining: number) => void>;
     /**
      * 残り変更可能回数。

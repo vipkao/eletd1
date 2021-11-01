@@ -24,6 +24,11 @@ export class SelectLiveMember implements IGameLayer{
         return this._onSelected;
     }
 
+    private readonly _onExit : EventPort<(spaceIndex: number, member: IMember) => void>;
+    get OnExit(): EventPort<(spaceIndex: number, member: IMember) => void>{
+        return this._onExit;
+    }
+
     private readonly _onCancel : EventPort<() => void>;
     get OnCancel(): EventPort<() => void>{
         return this._onCancel;
@@ -36,7 +41,8 @@ export class SelectLiveMember implements IGameLayer{
     private readonly headerImage: Image;
     private readonly cancelImage: Image;
     private readonly cancel: Button<void>;
-    //private readonly memberImages: {[key: number]: Image};
+    private readonly exitImage: Image;
+    private readonly exit: Button<void>;
     private readonly memberImages: Image[];
     private readonly memberButtons: Button<IMember>[];
     private readonly changeLimitText: FormatLabel;
@@ -47,10 +53,12 @@ export class SelectLiveMember implements IGameLayer{
         model: Model,
         selectMemberImageKey: string,
         cancelImageKey: string,
+        exitImageKey: string,
         memberImageIdKeys: {[key: number]: string}
     ){
         this.event = new EventEmitter();
         this._onSelected = new EventPort("OnSelected", this.event);
+        this._onExit = new EventPort("OnExit", this.event);
         this._onCancel = new EventPort("OnCancel", this.event);
 
         this.model = model;
@@ -71,13 +79,30 @@ export class SelectLiveMember implements IGameLayer{
             new RectangleBreath(0xFFFFFF, 0.5, 1),
             new RepeatRectangle(0xFFFFFF, 0.5, 2, 100, 1),
             new DownToClick(1200)
-        )
+        );
         this.cancel.OnTweenEnd.on(() => {
             this.layer.Setting(l => l.setVisible(false).setActive(false));
             this.event.emit(this._onCancel);
         });
         this.cancelImage = new Image(
             this.layer, 450, 600, 300, 200, cancelImageKey
+        );
+
+        this.exit = new Button(
+            this.layer, 900, 600, 300, 200, undefined,
+            new RectangleBreath(0xFFFFFF, 0.5, 1),
+            new RepeatRectangle(0xFFFFFF, 0.5, 2, 100, 1),
+            new DownToClick(1200)
+        );
+        this.exit.OnTweenEnd.on(() => {
+            this.layer.Setting(l => l.setVisible(false).setActive(false));
+            const m = this.model.element.liveSpace.space[this.liveSpaceIndex];
+            if(m === null)
+                throw new Error("mはnullになるのはおかしい。UIの制御ミス。");
+            this.event.emit(this._onExit, this.liveSpaceIndex, m);
+        });
+        this.exitImage = new Image(
+            this.layer, 900, 600, 300, 200, exitImageKey
         );
 
         const memberLayout = new GridLayout(
@@ -137,6 +162,9 @@ export class SelectLiveMember implements IGameLayer{
         this.cancelImage.SetScene(scene);
         this.cancel.SetScene(scene);
 
+        this.exitImage.SetScene(scene);
+        this.exit.SetScene(scene);
+
         this.memberImages.forEach((b, i)=>{
             b.SetScene(scene);
         });
@@ -149,9 +177,16 @@ export class SelectLiveMember implements IGameLayer{
             .Show();
     }
 
-    Show(index: number){
+    Show(index: number, member: IMember | null){
         this.liveSpaceIndex = index;
         this.layer.Setting(l => l.setVisible(true).setActive(true));
+        if(member === null){
+            this.exit.Setting(i => i.setVisible(false));
+            this.exitImage.Setting(i => i.setVisible(false));
+        }else{
+            this.exit.Setting(i => i.setVisible(true));
+            this.exitImage.Setting(i => i.setVisible(true));
+        }
     }
 
     Destory(): void{

@@ -54,16 +54,23 @@ export class PresetLimit implements IMemberChanger{
         });
 
         //指定した枠で配信しているメンバーは停止させる。
-        var oldMember = this.liveSpace.space[index];
-        if(oldMember !== null){
-            oldMember.EndLive();
-            oldMember.SetPosition(new Invalid());
-            this.liveSpace.SetMember(index, null);
-        }
+        this.ExitMember(index);
 
         newMember.SetPosition(position);
         newMember.StartLive();
         this.liveSpace.SetMember(index, newMember);
+    }
+
+    ExitMember(index: number){
+        if(index < 0) throw new Error("liveIndex < 0:" + index);
+        if(index > this.liveSpace.max - 1) throw new Error("liveIndex < max:" + index);
+
+        var member = this.liveSpace.space[index];
+        if(member !== null){
+            member.EndLive();
+            member.SetPosition(new Invalid());
+            this.liveSpace.SetMember(index, null);
+        }
     }
 
     public toString(){

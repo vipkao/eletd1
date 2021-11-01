@@ -25,7 +25,8 @@ export type PlaySceneImageKeys =
     | "liveOK" | "liveNG"
     | "goNext" | "goRetry" | "goTitle"
     | "ok" | "cancel" | "goLeft" | "goRight" | "close"
-    | "successHeader" | "failHeader" | "selectMemberHeader" | "liveWhereHeader"
+    | "successHeader" | "failHeader"
+    | "selectMemberHeader" | "liveWhereHeader" | "liveExit"
     | "signGood"
     | "infoListen"
     | "help1" | "help2" | "help3" | "help4"
@@ -159,7 +160,8 @@ export class PlayScene implements IPlayStage{
         );
         this.selectLiveMember = new SelectLiveMember(
             model,
-            sceneImages["selectMemberHeader"], sceneImages["cancel"],
+            sceneImages["selectMemberHeader"],
+            sceneImages["cancel"], sceneImages["liveExit"],
             member200ImageIdKey
         );
         this.putMember = new PutMember(
@@ -203,8 +205,8 @@ export class PlayScene implements IPlayStage{
             this.model.operator.stageNexter.Title();
         });
 
-        this.liveInfo.OnSelected.on(i => {
-            this.selectLiveMember.Show(i);
+        this.liveInfo.OnSelected.on((i, m) => {
+            this.selectLiveMember.Show(i, m);
             this.liveInfo.DisableButtons();
         });
         this.liveInfo.OnSelectDenied.on(() => {
@@ -227,6 +229,11 @@ export class PlayScene implements IPlayStage{
 
         this.selectLiveMember.OnSelected.on((i, m) => {
             this.putMember.Start(i, m);
+        });
+        this.selectLiveMember.OnExit.on((i, m) => {
+            this.model.updater.ResumeTick();
+            this.model.operator.memberChanger.ExitMember(i);
+            this.liveInfo.EnableButtons();
         });
         this.selectLiveMember.OnCancel.on(() => {
             this.model.updater.ResumeTick();
