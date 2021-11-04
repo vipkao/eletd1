@@ -103,13 +103,14 @@ export class Audience implements IGameLayer {
         if(this.scene === null) return this;
         if(this.container === null) return this;
 
-        if(this.satisfactionText !== null){
-            this.satisfactionText.Restart(count);
-        }else{
-            this.satisfactionText = new SatisfactionText(
-                count, this.scene, this.container
-            );    
-        }
+        // if(this.satisfactionText !== null){
+        //     this.satisfactionText.Restart(count);
+        // }else{
+        //     this.satisfactionText = new SatisfactionText(
+        //         count, this.scene, this.container
+        //     );    
+        // }
+        new SatisfactionBlitter(count, this.numberAtlasImageKey, this.scene, this.container);
         //new SatisfactionImage(count, this.numberAtlasImageKey, this.scene, this.container);
 
         this.nowSatisfaction += count;
@@ -198,6 +199,82 @@ class SatisfactionGauge{
         this.container.remove(this.fill);
     }
 }
+
+/**
+ * すごく早い上に黒くならない。優秀。
+ */
+class SatisfactionBlitter{
+    private readonly blitter: Phaser.GameObjects.Blitter;
+    private readonly tween: Phaser.Tweens.Tween;
+    private readonly container: Phaser.GameObjects.Container;
+    constructor(
+        count: number,
+        atlasImageKey: string,
+        scene: Phaser.Scene,
+        container: Phaser.GameObjects.Container
+    ){
+        this.blitter = this.BuildNumberBlitter(count, atlasImageKey, scene);
+        const x = Math.random()*20 - 25;
+        const y = Math.random()*20 - 25;
+        //const x = -5;
+        //const y = -5;
+        this.blitter.setPosition(x, y);
+        this.container = container;
+        container.add(this.blitter);
+        this.tween = scene.tweens.add({
+            targets: this.blitter,
+            duration: 1000,
+            y:{ start: y, to:y-10, ease: "Expo.easeOut" },
+            alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
+            onComplete: () => {
+                this.tween.stop();
+                this.tween.remove();
+                this.container.remove(this.blitter);
+                this.blitter.destroy();
+            }
+        });
+    }
+
+    private BuildNumberArray(count: number): string[]{
+        const sign = count > 0 ? "+" : count < 0 ? "-" : "";
+        const ret = (sign + count.toString()).split("");
+        return ret;
+    }
+
+    private BuildNumberBlitter(
+        count: number,
+        atlasImageKey: string,
+        scene: Phaser.Scene
+    ): Phaser.GameObjects.Blitter{
+        const numberArray = this.BuildNumberArray(count);
+        const atlasTexture = scene.textures.get(atlasImageKey);
+        const numberFrames = numberArray.map(n => {
+            const ret = atlasTexture.get(n);
+            return ret;
+        });
+        const lapWidth = 8;
+        const ret = new Phaser.GameObjects.Blitter(scene, 0, 0, atlasImageKey);
+
+        const drawFns:(() => void)[] = [];
+        let x = 0;
+        const BuildDrawFn = (x: number, key: string) => {
+            return () => {ret.create(x, 0, key)};
+        };
+        numberFrames.forEach((f, i) => {
+            drawFns.push(BuildDrawFn(x, f.name));
+            x += f.width - lapWidth;
+        });
+
+        drawFns.reverse().forEach(fn => {
+            fn();
+        });
+
+        return ret;
+    }
+
+}
+
+
 
 /**
  * あまり早くないし、どういう訳か真っ黒になるタイミングがあるのでＮＧ。
