@@ -1,5 +1,6 @@
 import { IGameLayer } from "../interfaces";
 import { Layer } from "./Layer";
+import { BuildAtlasedTextBlitter } from "./Util";
 
 /**
  * ＴＤ部分で表示されるリスナー１人分の表示。
@@ -16,7 +17,6 @@ export class Audience implements IGameLayer {
     private goodImage: Phaser.GameObjects.Image | null = null;
     private listenImage: Phaser.GameObjects.Image | null = null;
     private satisfactionGauge: SatisfactionGauge | null = null;
-    private satisfactionText: SatisfactionText | null = null;
     
     private readonly maxSatisfaction: number;
     private nowSatisfaction: number;
@@ -103,15 +103,7 @@ export class Audience implements IGameLayer {
         if(this.scene === null) return this;
         if(this.container === null) return this;
 
-        // if(this.satisfactionText !== null){
-        //     this.satisfactionText.Restart(count);
-        // }else{
-        //     this.satisfactionText = new SatisfactionText(
-        //         count, this.scene, this.container
-        //     );    
-        // }
         new SatisfactionBlitter(count, this.numberAtlasImageKey, this.scene, this.container);
-        //new SatisfactionImage(count, this.numberAtlasImageKey, this.scene, this.container);
 
         this.nowSatisfaction += count;
         this.satisfactionGauge?.Change(this.nowSatisfaction);
@@ -155,7 +147,6 @@ export class Audience implements IGameLayer {
         this.goodImage?.destroy();
         this.listenImage?.destroy();
         this.satisfactionGauge?.Destroy();
-        this.satisfactionText?.Destory();
         this.container?.destroy(true);
     }
 }
@@ -213,11 +204,14 @@ class SatisfactionBlitter{
         scene: Phaser.Scene,
         container: Phaser.GameObjects.Container
     ){
-        this.blitter = this.BuildNumberBlitter(count, atlasImageKey, scene);
+        this.blitter = BuildAtlasedTextBlitter(
+            this.BuildSignedNumber(count),
+            8,
+            atlasImageKey,
+            scene
+        );
         const x = Math.random()*20 - 25;
         const y = Math.random()*20 - 25;
-        //const x = -5;
-        //const y = -5;
         this.blitter.setPosition(x, y);
         this.container = container;
         container.add(this.blitter);
@@ -235,178 +229,8 @@ class SatisfactionBlitter{
         });
     }
 
-    private BuildNumberArray(count: number): string[]{
+    private BuildSignedNumber(count: number): string{
         const sign = count > 0 ? "+" : count < 0 ? "-" : "";
-        const ret = (sign + count.toString()).split("");
-        return ret;
-    }
-
-    private BuildNumberBlitter(
-        count: number,
-        atlasImageKey: string,
-        scene: Phaser.Scene
-    ): Phaser.GameObjects.Blitter{
-        const numberArray = this.BuildNumberArray(count);
-        const atlasTexture = scene.textures.get(atlasImageKey);
-        const numberFrames = numberArray.map(n => {
-            const ret = atlasTexture.get(n);
-            return ret;
-        });
-        const lapWidth = 8;
-        const ret = new Phaser.GameObjects.Blitter(scene, 0, 0, atlasImageKey);
-
-        const drawFns:(() => void)[] = [];
-        let x = 0;
-        const BuildDrawFn = (x: number, key: string) => {
-            return () => {ret.create(x, 0, key)};
-        };
-        numberFrames.forEach((f, i) => {
-            drawFns.push(BuildDrawFn(x, f.name));
-            x += f.width - lapWidth;
-        });
-
-        drawFns.reverse().forEach(fn => {
-            fn();
-        });
-
-        return ret;
-    }
-
-}
-
-
-
-/**
- * あまり早くないし、どういう訳か真っ黒になるタイミングがあるのでＮＧ。
- */
-class SatisfactionImage{
-    private readonly rt: Phaser.GameObjects.RenderTexture;
-    private readonly tween: Phaser.Tweens.Tween;
-    private readonly container: Phaser.GameObjects.Container;
-    constructor(
-        count: number,
-        atlasImageKey: string,
-        scene: Phaser.Scene,
-        container: Phaser.GameObjects.Container
-    ){
-        this.rt = this.BuildNumberRenderTexture(count, atlasImageKey, scene);
-        const x = Math.random()*20 - 25;
-        const y = Math.random()*20 - 25;
-        //const x = -5;
-        //const y = -5;
-        this.rt.setPosition(x, y);
-        this.container = container;
-        container.add(this.rt);
-        this.tween = scene.tweens.add({
-            targets: this.rt,
-            duration: 1000,
-            y:{ start: y, to:y-10, ease: "Expo.easeOut" },
-            alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
-            onComplete: () => {
-                this.tween.stop();
-                this.tween.remove();
-                this.container.remove(this.rt);
-                this.rt.destroy();
-            }
-        });
-    }
-
-    private BuildNumberArray(count: number): string[]{
-        const sign = count > 0 ? "+" : count < 0 ? "-" : "";
-        const ret = (sign + count.toString()).split("");
-        return ret;
-    }
-
-    private BuildNumberRenderTexture(
-        count: number,
-        atlasImageKey: string,
-        scene: Phaser.Scene
-    ): Phaser.GameObjects.RenderTexture{
-        const numberArray = this.BuildNumberArray(count);
-        const atlasTexture = scene.textures.get(atlasImageKey);
-        const numberFrames = numberArray.map(n => {
-            const ret = atlasTexture.get(n);
-            return ret;
-        });
-        const lapWidth = 8;
-        const totalWidth = numberFrames.map(f => f.width).reduce((a, b) => a+b) - (numberFrames.length - 1) * lapWidth;
-        const ret = new Phaser.GameObjects.RenderTexture(scene, 0, 0, totalWidth, numberFrames[0].height);
-
-        const drawFns:(() => void)[] = [];
-        let x = 0;
-        const BuildDrawFn = (x: number, key: string) => {
-            return () => {ret.drawFrame(atlasImageKey, key, x, 0)};
-        };
-        numberFrames.forEach((f, i) => {
-            drawFns.push(BuildDrawFn(x, f.name));
-            x += f.width - lapWidth;
-        });
-
-        ret.beginDraw();
-        drawFns.reverse().forEach(fn => {
-            fn();
-        });
-        ret.endDraw();
-
-        return ret;
-    }
-
-}
-/**
- * 処理速度アップのために、Textを再利用するようにした。
- */
-class SatisfactionText{
-    private readonly text: Phaser.GameObjects.Text;
-    private readonly tween: Phaser.Tweens.Tween;
-    private readonly container: Phaser.GameObjects.Container;
-    private nowCount: number = 0;
-    constructor(
-        count: number,
-        scene: Phaser.Scene,
-        container: Phaser.GameObjects.Container
-    ){
-        // const x = Math.random()*20 - 25;
-        // const y = Math.random()*20 - 25;
-        const x = -5;
-        const y = -5;
-        this.container = container;
-        this.nowCount = count;
-        //Textの生成は想像以上に重い模様。Canvas APIを使って描画しているから？
-        this.text = new Phaser.GameObjects.Text(scene, x, y, "+"+count.toString(),{})
-            .setColor("#000000").setFontSize(25).setStroke("#FFFFFF", 2)
-            .setShadow(0, 0, "#FFFFFF", 3, true);
-        container.add(this.text);
-        this.tween = scene.tweens.add({
-            targets: this.text,
-            duration: 1000,
-            y:{ start: y, to:y-10, ease: "Expo.easeOut" },
-            alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
-            onComplete: () => {
-                this.tween.stop();
-            }
-        });
-    }
-
-    Restart(count: number){
-        // const x = Math.random()*10 - 15;
-        // const y = Math.random()*10 - 15;
-        const x = -5;
-        const y = -5;
-        if(this.nowCount === count){
-            this.text.setPosition(x, y);
-        }else{
-            this.text.setText("+"+count.toString()).setPosition(x, y);
-            this.nowCount = count;
-        }
-        this.tween.restart();
-    }
-
-    Destory(){
-        this.tween.stop();
-        this.tween.remove();
-        this.container.remove(this.text);
-        this.text.destroy();
-        //tweenにdestroyはない
-        //this.tween.destroy();
+        return sign + count.toString();
     }
 }
