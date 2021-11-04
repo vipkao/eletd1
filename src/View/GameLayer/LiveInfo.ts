@@ -12,6 +12,7 @@ import { Nop as NopHighlighter } from "../Component/Customize/Highlighter/Nop";
 import { RepeatRectangle } from "../Component/Customize/Flasher/RepeatRectangle";
 import { DownToClick } from "../Component/Customize/ClickDetector/DownToClick";
 import { IMember } from "#/Model/Element/interfaces";
+import { BuildAtlasedTextBlitter } from "../Component/Util";
 
 type StopButtonImageKeys = "run" | "stop";
 
@@ -74,6 +75,7 @@ export class LiveInfo implements IGameLayer{
         speed7ImageKey: string,
         liveSpaceOkImageKey: string,
         liveSpaceNgImageKey: string,
+        numberAtlasImageKey: string,
         memberImageIdKeys: {[key: number]: string},
     ){
         this.model = model;
@@ -92,20 +94,22 @@ export class LiveInfo implements IGameLayer{
         this.model.element.subscriber.OnNowChanged.on((count, delta) => {
             this.subscribedCount.SetValues(count, this.model.element.subscriber.target);
             if(this.scene !== null && delta !== 0){
-                const dx = Math.random() * 20 - 10;
+                const dx = Math.random() * 100 - 50;
                 const dy = Math.random() * 20 - 10;
-                const sign = delta < 0 ? "－" : "＋";
-                const text = new Phaser.GameObjects.Text(this.scene, 990+dx, 20+dy, sign+Math.abs(delta).toString(),{})
-                    .setColor("#000000").setFontSize(25)//.setStroke("#000000", 1)
-                    .setShadow(0, 0, "#FFFFFF", 3, true);
+                const sign = delta < 0 ? "-" : "+";
+                const blitter = BuildAtlasedTextBlitter(
+                    sign+Math.abs(delta).toString(),
+                    8, numberAtlasImageKey, this.scene
+                )
+                blitter.setPosition(990+dx, 20+dy);
                 const y = delta < 0 ? 10 : -10;
-                this.layer.Setting(l => l.add(text));
+                this.layer.Setting(l => l.add(blitter));
                 this.scene.tweens.add({
-                    targets: text,
+                    targets: blitter,
                     duration: 2000,
-                    y:{ start: 20, to:20+y, ease: "Expo.easeOut" },
+                    y:{ start: 20+dy, to:20+dy+y, ease: "Expo.easeOut" },
                     alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
-                    onComplete: () => { text.destroy(); }
+                    onComplete: () => { blitter.destroy(); }
                 });
             }
         });

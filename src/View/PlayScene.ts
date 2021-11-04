@@ -156,6 +156,7 @@ export class PlayScene implements IPlayStage{
             sceneImages["speed0"], sceneImages["speed1"], sceneImages["speed2"], sceneImages["speed3"],
             sceneImages["speed4"], sceneImages["speed5"], sceneImages["speed6"], sceneImages["speed7"],
             sceneImages["liveOK"], sceneImages["liveNG"],
+            sceneAtlasImages["50number"],
             member200ImageIdKey
         );
         this.selectLiveMember = new SelectLiveMember(
