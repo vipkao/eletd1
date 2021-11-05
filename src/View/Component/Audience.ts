@@ -126,10 +126,13 @@ export class Audience implements IGameLayer {
                 imageTween?.remove();
             }
         });
+        const dx = Math.random()*20 - 10;
+        const dy = Math.random()*10 - 5;
+        this.goodImage?.setX(dx);
         const goodImageTween = this.scene?.tweens.add({
             targets: this.goodImage,
             duration: 2000,
-            y: { start: -20, to: -40, ease: "Expo.easeOut" },
+            y: { start: -20+dy, to: -40+dy, ease: "Expo.easeOut" },
             alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
             onComplete: () => {
                 this.goodImage?.setVisible(false);
