@@ -13,6 +13,7 @@ import { RepeatRectangle } from "../Component/Customize/Flasher/RepeatRectangle"
 import { DownToClick } from "../Component/Customize/ClickDetector/DownToClick";
 import { IMember } from "#/Model/Element/interfaces";
 import { BuildAtlasedTextBlitter } from "../Component/Util";
+import { Blitter } from "../Component/Blitter";
 
 type StopButtonImageKeys = "run" | "stop";
 
@@ -50,7 +51,7 @@ export class LiveInfo implements IGameLayer{
     private scene: Phaser.Scene | null = null;
     private readonly layer: Layer;
     private readonly baseImage: Image;
-    private readonly subscribedCount: FormatLabel;
+    private readonly subscribedCount: SubscribedCount;
     private readonly liveSpaceButtons: Button<number>[];
     private readonly liveMemberImages: { [key in number]: Image }
     private readonly liveSpaceOkImages: Image[];
@@ -76,6 +77,7 @@ export class LiveInfo implements IGameLayer{
         liveSpaceOkImageKey: string,
         liveSpaceNgImageKey: string,
         numberAtlasImageKey: string,
+        subscriberAtlasImageKey: string,
         memberImageIdKeys: {[key: number]: string},
     ){
         this.model = model;
@@ -89,27 +91,26 @@ export class LiveInfo implements IGameLayer{
         this.layer = new Layer();
 
         this.baseImage = new Image(this.layer, 800, 0, 400, 800, baseImageKey);
-        this.subscribedCount = new FormatLabel(this.layer, 810, 15)
-            .SetFormat("登録者数：{0}人\n目標：{1}人");
+        this.subscribedCount = new SubscribedCount(this.layer, subscriberAtlasImageKey);
         this.model.element.subscriber.OnNowChanged.on((count, delta) => {
-            this.subscribedCount.SetValues(count, this.model.element.subscriber.target);
+            this.subscribedCount.ShowNow(count);
             if(this.scene !== null && delta !== 0){
                 const dx = Math.random() * 100 - 50;
                 const dy = Math.random() * 20 - 10;
                 const sign = delta < 0 ? "-" : "+";
-                const blitter = BuildAtlasedTextBlitter(
+                const deltaBlitter = BuildAtlasedTextBlitter(
                     sign+Math.abs(delta).toString(),
                     8, numberAtlasImageKey, this.scene
                 )
-                blitter.setPosition(990+dx, 20+dy);
+                deltaBlitter.setPosition(990+dx, 20+dy);
                 const y = delta < 0 ? 10 : -10;
-                this.layer.Setting(l => l.add(blitter));
+                this.layer.Setting(l => l.add(deltaBlitter));
                 this.scene.tweens.add({
-                    targets: blitter,
+                    targets: deltaBlitter,
                     duration: 2000,
                     y:{ start: 20+dy, to:20+dy+y, ease: "Expo.easeOut" },
                     alpha: { start: 1, to: 0, ease: "Expo.easeIn" },
-                    onComplete: () => { blitter.destroy(); }
+                    onComplete: () => { deltaBlitter.destroy(); }
                 });
             }
         });
@@ -250,10 +251,9 @@ export class LiveInfo implements IGameLayer{
         this.layer.SetScene(scene);
 
         this.baseImage.SetScene(scene);
-        this.subscribedCount.SetScene(scene)
-            .Setting(text => text.setColor("#000033").setPadding(4).setFontSize(35).setShadow(2, 2, "#666699", 4))
-            .SetValues(this.model.element.subscriber.now, this.model.element.subscriber.target)
-            .Show();
+        this.subscribedCount.SetScene(scene);
+        this.subscribedCount.ShowTarget(this.model.element.subscriber.target);
+        this.subscribedCount.ShowNow(this.model.element.subscriber.now);
 
         for(const k in this.liveMemberImages){
             const v = this.liveMemberImages[parseInt(k)];
@@ -375,5 +375,40 @@ export class LiveInfo implements IGameLayer{
             v.Setting(i => i.setVisible(false));
         }
     }
+
+}
+
+class SubscribedCount{
+
+    private readonly nowCount: Blitter;
+    private readonly targetCount: Blitter;
+
+
+    constructor(
+        layer: Layer,
+        atlasKey: string,
+    ){
+        this.nowCount = new Blitter(layer, 810, 0, atlasKey);
+        this.targetCount = new Blitter(layer, 810, 50, atlasKey);
+    }
+
+    SetScene(scene: Phaser.Scene){
+        this.nowCount.SetScene(scene);
+        this.targetCount.SetScene(scene);
+    }
+
+    ShowTarget(count: number){
+        this.targetCount.Clear();
+        const text = `m${count}n`;
+        this.targetCount.ShowByChar(text, 10);
+    }
+
+    ShowNow(count: number){
+        this.nowCount.Clear();
+        const text = `t${count}n`;
+        this.nowCount.ShowByChar(text, 10);
+    }
+
+
 
 }

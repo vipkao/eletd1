@@ -54,7 +54,8 @@ const SCENE_IMAGES = {
 };
 
 const SCENE_ATLAS_IMAGES = {
-    "50number" : "images/50number1.png"
+    "50number" : "images/50number1.png",
+    "subscriberCount" : "images/subscriber1.png",
 };
 
 const TITLE_IMAGES = {

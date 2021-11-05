@@ -32,7 +32,7 @@ export type PlaySceneImageKeys =
     | "help1" | "help2" | "help3" | "help4"
     ;
 export type PlaySceneAtlasImageKeys = 
-    "50number"
+    "50number" | "subscriberCount"
     ;
 
 type memberConfigKeys = {
@@ -157,6 +157,7 @@ export class PlayScene implements IPlayStage{
             sceneImages["speed4"], sceneImages["speed5"], sceneImages["speed6"], sceneImages["speed7"],
             sceneImages["liveOK"], sceneImages["liveNG"],
             sceneAtlasImages["50number"],
+            sceneAtlasImages["subscriberCount"],
             member200ImageIdKey
         );
         this.selectLiveMember = new SelectLiveMember(
