@@ -23,7 +23,7 @@ export class TowerDefence implements IGameLayer{
     private readonly layer: Layer;
     private readonly background: Image;
     private readonly route: GraphicsImage;
-    private readonly liveArea: Graphics;
+    private readonly liveArea: GraphicsImage;
     private readonly memberImages: {[key: number]: Image};
 
     private readonly audienceImages: {[key: number]: AudienceImage};
@@ -54,8 +54,8 @@ export class TowerDefence implements IGameLayer{
         this.route = new GraphicsImage(
             this.layer, 0, 0, 800, 800
         );
-        this.liveArea = new Graphics(
-            this.layer
+        this.liveArea = new GraphicsImage(
+            this.layer, 0, 0, 800, 800
         );
         this.memberImages = {};
         this.model.element.members.all.forEach(m => {
@@ -159,9 +159,9 @@ export class TowerDefence implements IGameLayer{
             i.SetScene(scene);
         })
 
-        this.liveArea.SetScene(scene).Setting(g => g.setVisible(true));
+        this.liveArea.SetScene(scene);
         scene.tweens.add({
-            targets: this.liveArea.g,
+            targets: this.liveArea.image,
             ease: "Sine.easeInOut",
             duration: 400,
             loop: -1,
@@ -210,6 +210,7 @@ export class TowerDefence implements IGameLayer{
                 m.position.x, m.position.y, this.liveArea.g
             );
         });
+        this.liveArea.Update();
     }
 
 }

@@ -21,10 +21,12 @@ export class GraphicsImage implements IGameLayer{
     private phaserImage : Phaser.GameObjects.Image | null = null;
 
     get g(): Phaser.GameObjects.Graphics{
-        if(this.phaserGraphics === null){
-            this.phaserGraphics = this.BuildGraphics();
-        }
+        if(this.phaserGraphics === null) throw new Error("graphics");
         return this.phaserGraphics;
+    }
+    get image(): Phaser.GameObjects.Image{
+        if(this.phaserImage === null) throw new Error("image");
+        return this.phaserImage;
     }
 
     constructor(
@@ -48,6 +50,7 @@ export class GraphicsImage implements IGameLayer{
         if(this.phaserImage === null){
             this.phaserImage = this.BuildImage();
         }
+        this.Update();
         return this;
     }
 
@@ -90,6 +93,7 @@ export class GraphicsImage implements IGameLayer{
         const ret = new Phaser.GameObjects.Graphics(
             this.scene
         ).setVisible(false);
+        //負荷軽減のため、visibleはfalseにし、layerにはaddしない。
         return ret;
     }
     private BuildImage(): Phaser.GameObjects.Image{
