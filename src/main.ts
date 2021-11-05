@@ -26,6 +26,8 @@ declare const __INITIAL_SUBSCRIBER: number;
 
 declare const __DEVICE: DEVICE_TYPE;
 
+declare const __BUILD_DATE: string;
+
 const phaserGame = new PhaserGame(PhaserGame.GetConfig(__DEVICE));
 
 const stageFactories = StageFactory.CreateArray(
@@ -39,7 +41,7 @@ const stageFactories = StageFactory.CreateArray(
 );
 
 const director = new StageDirector(
-    new TitleFactory(TITLE_IMAGES, HELP_IMAGES, phaserGame),
+    new TitleFactory(TITLE_IMAGES, HELP_IMAGES, phaserGame, __BUILD_DATE),
     stageFactories,
     new EndingFactory(ENDING_IMAGES, phaserGame)
 );

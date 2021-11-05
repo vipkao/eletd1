@@ -1,0 +1,1 @@
+const __BUILD_DATE = "Sat Nov 06 2021 03:21:05 GMT+0900 (日本標準時)";

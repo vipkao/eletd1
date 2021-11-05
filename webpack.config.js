@@ -1,4 +1,5 @@
 const path = require('path');
+const VersionFile = require('webpack-version-file');
 
 module.exports = {
   mode: 'development',
@@ -23,4 +24,10 @@ module.exports = {
       path.resolve('./src')
     ]    
   },
+  plugins: [
+    new VersionFile({
+      output: './dist/version.js',
+      template: './version.ejs'
+    })
+  ]
 };

@@ -6,6 +6,7 @@ import { Title } from "./GameLayer/Title";
 import { SaveData } from "#/Model/Element/SaveData";
 import { Help } from "./GameLayer/Help";
 import { PhaserGame } from "./PhaserGame";
+import { FormatLabel } from "./Component/FormatLabel";
 
 export type TitleSceneImageKeys =
     "background" | "newButton" | "continueButton"
@@ -38,7 +39,8 @@ export class TitleScene implements ITitle{
         images : {[key in TitleSceneImageKeys]: string},
         buttonImageKey: string,
         helpImageKeys: string[],
-        phaserGame: PhaserGame
+        phaserGame: PhaserGame,
+        version: string
     ){
         this.event = new EventEmitter();
         this._onStageSelected = new EventPort("OnStageSelected", this.event);
@@ -49,7 +51,7 @@ export class TitleScene implements ITitle{
         this.phaserGame = phaserGame;
 
         this.title = new Title(
-            images["background"], buttonImageKey
+            images["background"], buttonImageKey, version
         );
 
         this.help = new Help(

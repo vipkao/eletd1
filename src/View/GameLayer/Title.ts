@@ -31,10 +31,14 @@ export class Title implements IGameLayer{
     private readonly startButtonImage: Image;
     private readonly startButton: Button<void>;
     private readonly helpButton: Button<void>;
+    private readonly version: FormatLabel;
+
+    private readonly versionString: string;
 
     constructor(
         backgroundImageKey: string,
-        buttonImageKey: string
+        buttonImageKey: string,
+        versionString: string,
     ){
         this.event = new EventEmitter();
         this._onHelp = new EventPort("OnHelp", this.event);
@@ -63,6 +67,10 @@ export class Title implements IGameLayer{
             new RepeatRectangle(0xFFFFFF, 0.5, 2, 100, 1),
             new DownToClick(1200)
         );
+        this.version = new FormatLabel(
+            this.layer, 0, 780
+        ).SetFormat("{0}");
+        this.versionString = versionString;
 
         this.startButton.OnTweenEnd.on(_ => {
             this.layer.Setting(l => l.setVisible(false).setActive(false));
@@ -84,6 +92,9 @@ export class Title implements IGameLayer{
         this.startButtonImage.SetScene(scene);
         this.startButton.SetScene(scene);
         this.helpButton.SetScene(scene);
+        this.version.SetScene(scene)
+            .Setting(t => t.setFontSize(20).setColor("#666666"))
+            .SetValues(this.versionString).Show();
 
     }
 
